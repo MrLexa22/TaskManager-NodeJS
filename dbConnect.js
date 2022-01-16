@@ -302,43 +302,32 @@ app.get("/alltasks", function(req, response) {
     let { tasks } = '';
     let { toUser } = '';
     let { user_auth } = '';
+    let { allusers } = '';
     if (session.username != null) {
-        con.query(` SELECT * FROM Tasks INNER JOIN users on ID = VidalUser_ID`, function(err, rows) {
+        con.query(`SELECT cm.Login AS Login_Vidal, cm.Familia AS Familia_Vidal, cm.Ima AS Ima_Vidal, cm.Email AS Email_Vidal, bd.Login AS Login_Poluchil, bd.Familia AS Familia_Poluchil, bd.Ima AS Ima_Poluchil, bd.Email AS Email_Poluchil, NameTask, TextTask, Date_Create, Date_Srok, Date_Vipolnenia, ID_Task FROM Tasks INNER JOIN users AS cm ON cm.ID = Tasks.VidalUser_ID INNER JOIN users AS bd ON bd.ID = Tasks.PoluchilUser_ID`, function(err, rows) {
             if (err) {
                 return console.log(err);
             }
             if (rows.length != 0) {
                 response.locals.tasks = rows;
                 tasks = response.locals.tasks;
-                con.query(`SELECT * FROM Tasks INNER JOIN users on ID = PoluchilUser_ID`, function(errs, rowss) {
+                con.query(`SELECT * FROM users WHERE Login = "${session.username}" or Email = "${session.username}"`, function(errs, rowss) {
                     if (errs) {
                         return console.log(errs);
                     }
                     if (rowss.length != 0) {
-                        response.locals.toUser = rowss;
-                        toUser = response.locals.toUser;
-                        con.query(`SELECT * FROM users WHERE Login = "${session.username}" or Email = "${session.username}"`, function(errs, rowss) {
-                            if (errs) {
-                                return console.log(errs);
+                        response.locals.authuser = rowss;
+                        user_auth = response.locals.authuser;
+                        con.query(`SELECT * FROM users`, function(errss, alluserss) {
+                            if (errss) {
+                                return console.log(errss);
                             }
-                            if (rowss.length != 0) {
-                                response.locals.authuser = rowss;
-                                user_auth = response.locals.authuser;
-                                con.query(`SELECT * FROM users`, function(errss, alluserss) {
-                                    if (errss) {
-                                        return console.log(errss);
-                                    }
-                                    if (rowss !== null) {
-                                        allusers = alluserss;
-                                        response.render("alltasks.ejs", { tasks: tasks, toUser: toUser, title: title, user_auth: user_auth, allusers: allusers });
-                                    } else {
-                                        response.render("alltasks.ejs", { tasks: tasks, toUser: toUser, title: title, user_auth: user_auth, allusers: allusers });
-                                    }
-                                });
+                            if (rowss !== null) {
+                                allusers = alluserss;
+                                response.render("alltasks.ejs", { tasks: tasks, title: title, user_auth: user_auth, allusers: allusers });
                             } else {
-                                let message = req.flash('info');
-                                response.redirect("/");
-                            };
+                                response.render("alltasks.ejs", { tasks: tasks, title: title, user_auth: user_auth, allusers: allusers });
+                            }
                         });
                     } else {
                         let message = req.flash('info');
