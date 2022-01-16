@@ -1,0 +1,463 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <title>TaskManager</title>
+    <link rel="stylesheet" href="/assets/mainpage.css">
+    <link rel="stylesheet" href="/assets/modals.css">
+    <link rel="icon" type="image/png" href="/images/icons/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
+    <script src="/dist/jQuery-Timepicker-Addon-master/dist/jquery-ui-timepicker-addon.js"></script>
+    <link rel="stylesheet" href="/dist/jQuery-Timepicker-Addon-master/dist/jquery-ui-timepicker-addon.min.css">
+    <script src="/vendor/bootstrap/js/popper.js"></script>
+    <link rel="stylesheet" type="text/css" href="/assets/util.css">
+    <link rel="stylesheet" type="text/css" href="/assets/main.css">
+</head>
+
+<div class="modal" data-modal="1">
+    <!--   Svg иконка для закрытия окна  -->
+    <svg class="modal__cross js-modal-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path
+            d="M23.954 21.03l-9.184-9.095 9.092-9.174-2.832-2.807-9.09 9.179-9.176-9.088-2.81 2.81 9.186 9.105-9.095 9.184 2.81 2.81 9.112-9.192 9.18 9.1z" />
+    </svg>
+    <p class="modal__title">Создание задачи</p>
+    <div class="container">
+        <form method="post" action="/api/createtask" class="validate-form">
+            <div class="row">
+                <div class="col-25">
+                    <label for="lname">Название задачи</label>
+                </div>
+                <div class="col-75 validate-input" data-validate="Неккоректное название">
+                    <input style="background-color: white; height: none;" class="input100" type="text" autocomplete="off" name="nameTask" placeholder="Название задачи">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="users">Пользователь</label>
+                </div>
+                <div class="col-75">
+                    <select id="users" name="users">
+                        <%for(var i=0;i<allusers.length;i++){%>
+                            <option value="<%= allusers[i].ID%>"><%= allusers[i].Familia%> <%= (allusers[i].Ima).charAt(0)+"."%> (<%= allusers[i].Login%>)%></option>
+                            <%}%>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="country">Срок выполнения</label>
+                </div>
+                <div class="col-75 validate-input" data-validate="Неккоректная дата и время">
+                    <input style="background-color: white; height: none;" type="text" class="input100" autocomplete="off" id="datepker" name="dates" placeholder="Срок выполнения">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="textTask">Полный текст задачи</label>
+                </div>
+                <div class="col-75 validate-input" data-validate="Неккоректное описание">
+                    <textarea id="textTask" class="input100" name="textTask" placeholder="Распишите задачу подробнее" style="border-radius: 0px; padding: 12px; background-color: white; min-height: 200px;height:200px; max-height: 300px; overflow: auto;"></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <input type="submit" value="Создать задачу">
+            </div>
+        </form>
+    </div>
+</div>
+
+<body class="ms-Fabric--isFocusHidden">
+    <div id="main__div">
+        <div id="main_div_con">
+            <div id="div_after_main">
+                <div class="lcol">
+                    <div class="sidebar">
+                        <div class="sidebar-content">
+                            <div class="user-about">
+                                <div style="padding: 10px;">
+                                    <div style="display: flex; justify-content: center;">
+                                        <div class="userInfo familia">
+                                            <%= user_auth[0].Familia%>
+                                                <%= user_auth[0].Ima%>
+                                        </div>
+                                    </div>
+                                    <div class="userInfo log">
+                                        <%= user_auth[0].Login%>
+                                    </div>
+                                    <div class="userInfo email">
+                                        <%= user_auth[0].Email%>
+                                    </div>
+                                </div>
+                                <li class="listItem-container">
+                                    <a href="/logout">
+                                        <div class="listItem">
+                                            <div class="listItem-inner color-blue">
+                                                <span class="listItem-icon">
+                                                    <i class="icon fontIcon ms-Icon fa fa-sign-out iconSize-24"></i>
+                                                </span>
+                                                <span class="listItem-title listItem-titleParsed">
+                                                    <span>Выход из системы</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            </div>
+                            <nav class="sidebar-scroll">
+                                <ul class="lists">
+                                    <div>
+                                        <li class="listItem-container">
+                                            <a href="/">
+                                                <div class="listItem">
+                                                    <div class="listItem-inner color-blue">
+                                                        <span class="listItem-icon">
+                                                            <i
+                                                                class="icon fontIcon ms-Icon fa fa-tasks iconSize-24"></i>
+                                                        </span>
+                                                        <span class="listItem-title listItem-titleParsed">
+                                                            <span>Поставленные мне задачи</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    </div>
+                                    <div style="margin-bottom:9px">
+                                        <a href="/metasks_done">
+                                            <li class="listItem-container">
+                                                <div class="listItem">
+                                                    <div class="listItem-inner color-blue"><span class="listItem-icon"><i
+                                                                class="icon fontIcon ms-Icon fa fa-check iconSize-24"></i></span>
+                                                        <span class="listItem-title listItem-titleParsed"><span>Выполненные
+                                                                задачи</span></span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <a href="/metasks_dani">
+                                            <li class="listItem-container">
+                                                <div class="listItem">
+                                                    <div class="listItem-inner color-blue">
+                                                        <span class="listItem-icon">
+                                                            <i
+                                                                class="icon fontIcon ms-Icon fa fa-list-ol iconSize-24"></i>
+                                                        </span>
+                                                        <span class="listItem-title listItem-titleParsed">
+                                                            <span>Мои заданные задачи</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <a href="/frommetasks_done">
+                                            <li class="listItem-container">
+                                                <div class="listItem">
+                                                    <div class="listItem-inner color-blue">
+                                                        <span class="listItem-icon">
+                                                            <i class="icon fontIcon ms-Icon fa fa-list-alt iconSize-24"></i>
+                                                        </span>
+                                                        <span class="listItem-title listItem-titleParsed">
+                                                        <span>Выполн. мною заданные</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </a>
+                                    </div>
+                                    <div style="margin-bottom:9px">
+                                        <a href="/alltasks">
+                                            <li class="listItem-container">
+                                                <div class="listItem">
+                                                    <div class="listItem-inner color-blue"><span class="listItem-icon"><i
+                                                                class="icon fontIcon ms-Icon fa fa-globe iconSize-24"></i></span>
+                                                        <span class="listItem-title listItem-titleParsed"><span>Все
+                                                                задачи всех польз.</span></span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </a>
+                                    </div>
+                                </ul>
+                            </nav>
+                            <div class="sidebar-addList">
+                                <div style="width: 100%;">
+                                    <div class="listItem-container">
+                                        <div id="planned" class="listItem">
+                                            <button data-modal="1" class="js-open-modal listItem-inner color-blue"><span class="listItem-icon"><i
+                                                        class="icon fontIcon ms-Icon fa fa-plus iconSize-24"></i></span>
+                                                <span class="listItem-title listItem-titleParsed"><span>Создать
+                                                        задачу</span></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="centerColumn">
+                    <div id="mainCenter">
+                        <div class="tasksToolbar">
+                            <div class="tasksToolbar-top">
+                                <div class="tasksToolbar-headline">
+                                    <div class="tasksToolbar-titleContainer">
+                                        <div class="tasksToolbar-titleItem">
+                                            <h2 class="listTitle"><span>
+                                                    <%= title%>
+                                                </span>
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <% if (message.length> 0) { %>
+                                    <div class="alert alert-danger col-sm-12">
+                                        <%= message %>
+                                    </div>
+                                    <% } %>
+                                        <%if(tasksForUser.length <= 0){%>
+                                            <div class="mainsd">
+                                                <div class="Itemtask">
+                                                    <dvi style="font-size: 18px;">В данном разделе задачи отсутствуют!</dvi>
+                                                </div>
+                                            </div>
+                                            <%}%>
+
+                                                <% if(tasksForUser.length> 0){%>
+                                                    <% for(let i=0; i < tasksForUser.length; i++){%>
+                                                        <div class="mainsd">
+                                                            <a href="/abouttask/<%= tasksForUser[i].ID_Task%>">
+                                                                <div class="Itemtask">
+                                                                    <div class="taskItem-body">
+                                                                        <div class="taskItem-titwr">
+                                                                            <div class="taskItem-title">
+                                                                                <div style="margin-bottom: 20px;">
+                                                                                    <b style="font-size: 17;">
+                                                                        <%= tasksForUser[i].NameTask%>
+                                                                    </b>
+                                                                                </div>
+                                                                                <%if(title=="Выданные мною задачи пользователям"){%>
+                                                                                    <div class="datainfo">
+                                                                                        <span>
+                                                                            <span class="taskDopInformation">
+                                                                                <span><b>Задание
+                                                                                        выдал:</b>
+                                                                                    <%= user[0].Familia%>
+                                                                                        <%= user[0].Ima%>
+                                                                                            (<%= user[0].Login%>)
+                                                                                </span>
+                                                                                        </span>
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <div class="datainfo">
+                                                                                        <span class="taskDopInformation">
+                                                                            <span class="taskItemInfo-title">
+                                                                                <span><b>Задание
+                                                                                        выдал
+                                                                                        (Эл.
+                                                                                        почта):</b>
+                                                                                    <%= user[0].Email%>
+                                                                                </span>
+                                                                                        </span>
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <%}%>
+                                                                                        <%if(title=="Выполненные мои задачи пользователей"){%>
+                                                                                            <div class="datainfo">
+                                                                                                <span>
+                                                                                                    <span class="taskDopInformation">
+                                                                                                        <span><b>Задание
+                                                                                                                выдал:</b>
+                                                                                                            <%= user[0].Familia%>
+                                                                                                                <%= user[0].Ima%>
+                                                                                                                    (<%= user[0].Login%>)
+                                                                                                        </span>
+                                                                                                </span>
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <div class="datainfo">
+                                                                                                <span class="taskDopInformation">
+                                                                                                    <span class="taskItemInfo-title">
+                                                                                                        <span><b>Задание
+                                                                                                                выдал
+                                                                                                                (Эл.
+                                                                                                                почта):</b>
+                                                                                                            <%= user[0].Email%>
+                                                                                                        </span>
+                                                                                                </span>
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <%}%>
+                                                                                                <%if(title=="Поставленные мне задачи" || title=="Выполненные мною задачи пользователей"){%>
+                                                                                                    <div class="datainfo">
+                                                                                                        <span>
+                                                                                    <span class="taskDopInformation">
+                                                                                        <span><b>Задание
+                                                                                                выдал:</b>
+                                                                                            <%=
+                                                                                                tasksForUser[i].Familia%>
+                                                                                                <%=
+                                                                                                    tasksForUser[i].Ima%>
+                                                                                                    (<%=
+                                                                                                        tasksForUser[i].Login%>
+                                                                                                        )
+                                                                                        </span>
+                                                                                                        </span>
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                    <div class="datainfo">
+                                                                                                        <span class="taskDopInformation">
+                                                                                    <span class="taskItemInfo-title">
+                                                                                        <span><b>Задание
+                                                                                                выдал
+                                                                                                (Эл.
+                                                                                                почта):</b>
+                                                                                            <%= tasksForUser[i].Email%>
+                                                                                        </span>
+                                                                                                        </span>
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                    <%}%>
+                                                                            </div>
+                                                                            <% if(title=="Поставленные мне задачи" || title=="Выполненные мною задачи пользователей"){%>
+                                                                                <div class="datainfo">
+                                                                                    <span class="taskDopInformation">
+                                                                        <span class="taskItemInfo-title">
+                                                                            <span><b>Кому:</b>
+                                                                                <%= user[0].Familia%>
+                                                                                    <%= user[0].Ima%>
+                                                                                        (<%= user[0].Login%>
+                                                                                            )
+                                                                            </span>
+                                                                                    </span>
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div class="datainfo">
+                                                                                    <span class="taskDopInformation">
+                                                                        <span class="taskItemInfo-title">
+                                                                            <span><b>Кому (Эл.
+                                                                                    почта):</b>
+                                                                                <%= user[0].Email%>
+                                                                            </span>
+                                                                                    </span>
+                                                                                    </span>
+                                                                                </div>
+                                                                                <%}%>
+                                                                                    <%if(title=="Выданные мною задачи пользователям" || title=="Выполненные мои задачи пользователей"){%>
+                                                                                        <div class="datainfo">
+                                                                                            <span class="taskDopInformation">
+                                                                                <span class="taskItemInfo-title">
+                                                                                    <span><b>Кому:</b>
+                                                                                        <%= tasksForUser[i].Familia%>
+                                                                                            <%= tasksForUser[i].Ima%>
+                                                                                                (<%=
+                                                                                                    tasksForUser[i].Login+")"%>
+                                                                                    </span>
+                                                                                            </span>
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <div class="datainfo">
+                                                                                            <span class="taskDopInformation">
+                                                                                <span class="taskItemInfo-title">
+                                                                                    <span><b>Кому (Эл.
+                                                                                            почта):</b>
+                                                                                        <%= tasksForUser[i].Email%>
+                                                                                    </span>
+                                                                                            </span>
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <%}%>
+                                                                                            <div class="datainfo">
+                                                                                                <span class="taskDopInformation">
+                                                                                    <span class="taskItemInfo-title">
+                                                                                        <span><b>Дата
+                                                                                                создания:</b>
+                                                                                            <%=
+                                                                                                (tasksForUser[i].Date_Create).toLocaleString('ru-RU', { hour12: false })%>
+                                                                                        </span>
+                                                                                                </span>
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <div class="datainfo">
+                                                                                                <span class="taskDopInformation">
+                                                                                    <span class="taskItemInfo-title">
+                                                                                        <span><b>Срок
+                                                                                                выполнения:</b>
+                                                                                            <%=
+                                                                                                (tasksForUser[i].Date_Srok).toLocaleString('ru-RU', { hour12: false })%>
+                                                                                        </span>
+                                                                                                </span>
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <div class="datainfo">
+                                                                                                <span class="taskDopInformation">
+                                                                                    <span class="taskItemInfo-title">
+                                                                                        <%if(tasksForUser[i].Date_Vipolnenia==null){%>
+                                                                                            <span
+                                                                                                style="color: rgb(255, 97, 97);"><b
+                                                                                                    style="color: #767678;">Статус:</b>
+                                                                                                Не выполено.
+                                                                                                <% if(new Date()>
+                                                                                                    new
+                                                                                                    Date(tasksForUser[i].Date_Srok)){%>
+                                                                                                    <b
+                                                                                                        style="color: rgb(255, 97, 97);">Срок
+                                                                                                        сдачи
+                                                                                                        пропущен</b>
+                                                                                                    <%}%>
+
+                                                                                            </span>
+                                                                                                <%}%>
+                                                                                                    <%if(tasksForUser[i].Date_Vipolnenia!=null){%>
+                                                                                                        <span style="color: rgb(97, 179, 97);"><b
+                                                                                                            style="color: #767678;">Статус:</b>
+                                                                                                        Выполнено
+                                                                                                        <%=
+                                                                                                            (tasksForUser[i].Date_Vipolnenia).toLocaleString('ru-RU', { hour12: false })+"."%>
+                                                                                                            <% if(new
+                                                                                                                Date(tasksForUser[i].Date_Vipolnenia)>
+                                                                                                                new
+                                                                                                                Date(tasksForUser[i].Date_Srok)){%>
+                                                                                                                <b
+                                                                                                                    style="color: rgb(255, 97, 97);">Срок
+                                                                                                                    сдачи
+                                                                                                                    пропущен</b>
+                                                                                                                <%}%>
+
+                                                                                                    </span>
+                                                                                                        <%}%>
+                                                                                                            </span>
+                                                                                                            </span>
+                                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>
+                                                                </div>
+                                                            </a>
+                                                        </div>
+                                                        <%} %>
+                                                            <%} %>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/dist/modals.js"></script>
+    <div class="overlay js-overlay-modal"></div>
+</body>
+
+</html>
